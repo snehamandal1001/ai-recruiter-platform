@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getRankedCandidates } from "../api/applications";
+import { getRankedCandidates, getInterviewQuestions } from "../api/applications";
 
 function ScoreBar({ score }) {
   const color = score >= 70 ? "#16a34a" : score >= 40 ? "#f59e0b" : "#dc2626";
@@ -14,6 +14,69 @@ function ScoreBar({ score }) {
           transition: "width 0.3s ease",
         }}
       />
+    </div>
+  );
+}
+
+function InterviewQuestions({ applicationId }) {
+  const [questions, setQuestions] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [visible, setVisible] = useState(false);
+
+  const handleClick = () => {
+    // If already loaded, just toggle visibility instead of re-fetching
+    if (questions) {
+      setVisible((v) => !v);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    getInterviewQuestions(applicationId)
+      .then((response) => {
+        setQuestions(response.data);
+        setVisible(true);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to generate questions.");
+        setLoading(false);
+      });
+  };
+
+  return (
+    <div style={{ marginTop: "0.75rem" }}>
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        style={{
+          padding: "0.4rem 0.8rem",
+          fontSize: "0.85rem",
+          borderRadius: "6px",
+          border: "1px solid #4f46e5",
+          background: visible ? "#4f46e5" : "white",
+          color: visible ? "white" : "#4f46e5",
+          cursor: "pointer",
+        }}
+      >
+        {loading
+          ? "Generating..."
+          : visible
+          ? "Hide Interview Questions"
+          : "Generate Interview Questions"}
+      </button>
+
+      {error && <p style={{ color: "red", fontSize: "0.85rem" }}>{error}</p>}
+
+      {visible && questions && (
+        <ol style={{ marginTop: "0.5rem", paddingLeft: "1.2rem", fontSize: "0.9rem" }}>
+          {questions.map((q, i) => (
+            <li key={i} style={{ marginBottom: "0.4rem" }}>{q}</li>
+          ))}
+        </ol>
+      )}
     </div>
   );
 }
@@ -68,6 +131,8 @@ function RankedCandidates({ jobId }) {
           <p style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "#666" }}>
             Skills: {app.candidate.extractedSkills?.join(", ") || "—"}
           </p>
+
+          <InterviewQuestions applicationId={app.id} />
         </div>
       ))}
     </div>

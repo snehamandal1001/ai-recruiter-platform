@@ -6,3 +6,6 @@ const API = axios.create({
 
 export const getRankedCandidates = (jobId) =>
   API.get(`/api/applications/job/${jobId}/ranked`);
+
+export const getInterviewQuestions = (applicationId) =>
+  API.get(`/api/applications/${applicationId}/interview-questions`);

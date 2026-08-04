@@ -111,16 +111,18 @@ public class LlmService {
                 if (node.isTextual()) {
                     // Model returned a plain string, e.g. "What is polymorphism?"
                     questions.add(node.asText());
-                } else if (node.isObject() && node.has("question")) {
-                    // Model wrapped it in an object, e.g. {"question": "..."}
-                    questions.add(node.get("question").asText());
+                } else if (node.isObject() && node.propertyStream().findFirst().isPresent()) {
+                    // Model wrapped it in an object with SOME key name we didn't predict
+                    // (e.g. "question", "description", "text") — just grab the first value, whatever it's called
+                    JsonNode firstValue = node.propertyStream().findFirst().get().getValue();
+                    questions.add(firstValue.asText());
                 } else {
-                    // Fallback: just stringify whatever came back so nothing is silently dropped
+                    // Last-resort fallback: stringify so nothing is silently dropped
                     questions.add(node.toString());
                 }
             });
             return questions;
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
