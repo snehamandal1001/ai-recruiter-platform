@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getJobs } from "../api/jobs";
 
-function JobList() {
+function JobList({ onSelectJob, selectedJobId }) {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,12 +26,23 @@ function JobList() {
     <div>
       <h2>Open Positions</h2>
       {jobs.length === 0 && <p>No jobs posted yet.</p>}
-      <ul>
+      <ul style={{ listStyle: "none", padding: 0 }}>
         {jobs.map((job) => (
-          <li key={job.id} style={{ marginBottom: "1rem" }}>
+          <li
+            key={job.id}
+            onClick={() => onSelectJob(job.id)}
+            style={{
+              marginBottom: "0.75rem",
+              padding: "1rem",
+              border: selectedJobId === job.id ? "2px solid #4f46e5" : "1px solid #ddd",
+              borderRadius: "8px",
+              cursor: "pointer",
+              backgroundColor: selectedJobId === job.id ? "#eef2ff" : "white",
+            }}
+          >
             <strong>{job.title}</strong>
-            <p>{job.description}</p>
-            <small>Posted by: {job.recruiterEmail}</small>
+            <p style={{ margin: "0.25rem 0", color: "#555" }}>{job.description}</p>
+            <small>Required: {job.requiredSkills?.join(", ") || "—"}</small>
           </li>
         ))}
       </ul>
