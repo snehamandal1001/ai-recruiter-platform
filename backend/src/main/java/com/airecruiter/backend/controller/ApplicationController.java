@@ -7,6 +7,7 @@ import com.airecruiter.backend.repository.ApplicationRepository;
 import com.airecruiter.backend.repository.CandidateRepository;
 import com.airecruiter.backend.repository.JobPostingRepository;
 import com.airecruiter.backend.service.AtsScoringService;
+import com.airecruiter.backend.service.LlmService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,9 @@ public class ApplicationController {
 
     @Autowired
     private AtsScoringService atsScoringService;
+
+    @Autowired
+    private LlmService llmService;
 
     @PostMapping("/apply")
     public Application apply(@RequestParam Long candidateId, @RequestParam Long jobId) {
@@ -52,5 +56,17 @@ public class ApplicationController {
     @GetMapping("/job/{jobId}/ranked")
     public List<Application> getRankedCandidates(@PathVariable Long jobId) {
         return applicationRepository.findByJobPostingIdOrderByAtsScoreDesc(jobId);
+    }
+
+    @GetMapping("/{applicationId}/interview-questions")
+    public List<String> getInterviewQuestions(@PathVariable Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+
+        return llmService.generateInterviewQuestions(
+                application.getJobPosting().getTitle(),
+                application.getJobPosting().getDescription(),
+                application.getCandidate().getExtractedSkills()
+        );
     }
 }
