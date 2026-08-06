@@ -1,21 +1,44 @@
 import { useEffect, useState } from "react";
 import { getRankedCandidates, getInterviewQuestions } from "../api/applications";
 
-function ScoreBar({ score }) {
-  const color = score >= 70 ? "#16a34a" : score >= 40 ? "#f59e0b" : "#dc2626";
+function hashHue(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  return Math.abs(hash) % 360;
+}
+
+function initials(name) {
+  return name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+}
+
+function Avatar({ name }) {
+  const hue = hashHue(name || "?");
+  const bg = `linear-gradient(135deg, hsl(${hue},70%,55%), hsl(${(hue + 45) % 360},70%,45%))`;
+  return <div className="avatar" style={{ background: bg }}>{initials(name || "?")}</div>;
+}
+
+function scoreTier(score) {
+  if (score >= 70) return "good";
+  if (score >= 40) return "warn";
+  return "bad";
+}
+
+function ScoreStamp({ score }) {
   return (
-    <div style={{ background: "#e5e7eb", borderRadius: "6px", height: "10px", width: "100%" }}>
-      <div
-        style={{
-          width: `${score}%`,
-          background: color,
-          height: "100%",
-          borderRadius: "6px",
-          transition: "width 0.3s ease",
-        }}
-      />
+    <div className={`stamp ${scoreTier(score)}`}>
+      <span className="value">{Math.round(score)}%</span>
     </div>
   );
+}
+
+function SkillTag({ skill }) {
+  const hue = hashHue(skill);
+  const style = {
+    background: `hsl(${hue}, 75%, 95%)`,
+    borderColor: `hsl(${hue}, 60%, 85%)`,
+    color: `hsl(${hue}, 55%, 32%)`,
+  };
+  return <span className="tag" style={style}>{skill}</span>;
 }
 
 function InterviewQuestions({ applicationId }) {
@@ -25,12 +48,10 @@ function InterviewQuestions({ applicationId }) {
   const [visible, setVisible] = useState(false);
 
   const handleClick = () => {
-    // If already loaded, just toggle visibility instead of re-fetching
     if (questions) {
       setVisible((v) => !v);
       return;
     }
-
     setLoading(true);
     setError(null);
     getInterviewQuestions(applicationId)
@@ -47,34 +68,14 @@ function InterviewQuestions({ applicationId }) {
   };
 
   return (
-    <div style={{ marginTop: "0.75rem" }}>
-      <button
-        onClick={handleClick}
-        disabled={loading}
-        style={{
-          padding: "0.4rem 0.8rem",
-          fontSize: "0.85rem",
-          borderRadius: "6px",
-          border: "1px solid #4f46e5",
-          background: visible ? "#4f46e5" : "white",
-          color: visible ? "white" : "#4f46e5",
-          cursor: "pointer",
-        }}
-      >
-        {loading
-          ? "Generating..."
-          : visible
-          ? "Hide Interview Questions"
-          : "Generate Interview Questions"}
+    <div>
+      <button className={`iq-toggle ${visible ? "open" : ""}`} onClick={handleClick} disabled={loading}>
+        {loading ? "Generating…" : visible ? "Hide Questions" : "Generate Interview Questions"}
       </button>
-
-      {error && <p style={{ color: "red", fontSize: "0.85rem" }}>{error}</p>}
-
+      {error && <p className="iq-error">{error}</p>}
       {visible && questions && (
-        <ol style={{ marginTop: "0.5rem", paddingLeft: "1.2rem", fontSize: "0.9rem" }}>
-          {questions.map((q, i) => (
-            <li key={i} style={{ marginBottom: "0.4rem" }}>{q}</li>
-          ))}
+        <ol className="iq-list">
+          {questions.map((q, i) => <li key={i}>{q}</li>)}
         </ol>
       )}
     </div>
@@ -102,37 +103,28 @@ function RankedCandidates({ jobId }) {
       });
   }, [jobId]);
 
-  if (!jobId) return <p style={{ color: "#888" }}>Select a job to see ranked candidates.</p>;
-  if (loading) return <p>Loading candidates...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (applications.length === 0) return <p>No applications for this job yet.</p>;
+  if (!jobId) return <p className="empty-state">Select a role to review its candidates.</p>;
+  if (loading) return <p className="empty-state">Loading candidates...</p>;
+  if (error) return <p className="empty-state" style={{ color: "var(--bad)" }}>{error}</p>;
+  if (applications.length === 0) return <p className="empty-state">No applications for this role yet.</p>;
 
   return (
     <div>
       <h2>Ranked Candidates</h2>
       {applications.map((app) => (
-        <div
-          key={app.id}
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: "8px",
-            padding: "1rem",
-            marginBottom: "0.75rem",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <strong>{app.candidate.fullName}</strong>
-            <span style={{ fontWeight: "bold" }}>{app.atsScore.toFixed(0)}%</span>
+        <div key={app.id} className="dossier">
+          <Avatar name={app.candidate.fullName} />
+          <div className="dossier-main">
+            <p className="name">{app.candidate.fullName}</p>
+            <p className="email">{app.candidate.email}</p>
+            <div className="tag-row">
+              {(app.candidate.extractedSkills || []).map((skill, i) => (
+                <SkillTag key={i} skill={skill} />
+              ))}
+            </div>
+            <InterviewQuestions applicationId={app.id} />
           </div>
-          <p style={{ margin: "0.25rem 0", color: "#555", fontSize: "0.9rem" }}>
-            {app.candidate.email}
-          </p>
-          <ScoreBar score={app.atsScore} />
-          <p style={{ marginTop: "0.5rem", fontSize: "0.85rem", color: "#666" }}>
-            Skills: {app.candidate.extractedSkills?.join(", ") || "—"}
-          </p>
-
-          <InterviewQuestions applicationId={app.id} />
+          <ScoreStamp score={app.atsScore} />
         </div>
       ))}
     </div>

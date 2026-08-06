@@ -7,12 +7,19 @@ function App() {
   const [selectedJobId, setSelectedJobId] = useState(null);
 
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "2rem" }}>
-      <h1>AI Recruiter Platform</h1>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
-        <JobList onSelectJob={setSelectedJobId} selectedJobId={selectedJobId} />
-        <RankedCandidates jobId={selectedJobId} />
-      </div>
+    <div className="app-shell">
+      <header className="app-header">
+        <span className="mark">AI Recruiter</span>
+        <span className="tagline">Screening &amp; ranking, automated</span>
+      </header>
+      <main className="app-grid">
+        <div className="rail">
+          <JobList onSelectJob={setSelectedJobId} selectedJobId={selectedJobId} />
+        </div>
+        <div className="board">
+          <RankedCandidates jobId={selectedJobId} />
+        </div>
+      </main>
     </div>
   );
 }
