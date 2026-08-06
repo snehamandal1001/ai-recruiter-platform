@@ -63,3 +63,9 @@ cd backend
 ## 📄 License
 
 MIT — see [LICENSE](LICENSE)
+## 🚀 Live Demo
+
+**Frontend:** https://ai-recruiter-platform-navy.vercel.app
+**Backend API:** https://ai-recruiter-platform.onrender.com/api/jobs
+
+> Note: the backend is on Render's free tier, which spins down after inactivity — the first request may take 30-50 seconds to wake up.
