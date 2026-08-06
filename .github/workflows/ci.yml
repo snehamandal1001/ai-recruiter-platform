@@ -18,6 +18,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+      - name: Make mvnw executable
+        working-directory: ./backend
+        run: chmod +x mvnw
+
       - name: Run backend tests
         working-directory: ./backend
         run: ./mvnw clean test
