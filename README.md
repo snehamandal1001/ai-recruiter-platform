@@ -4,6 +4,21 @@
 
 AI-powered resume screening, candidate ranking, and interview question generation — built to solve the real problem of recruiters spending hours manually screening resumes.
 
+## 🚀 Live Demo
+
+**App:** https://ai-recruiter-platform-navy.vercel.app
+**Backend API:** https://ai-recruiter-platform.onrender.com/api/jobs
+
+> The backend is on Render's free tier, which spins down after inactivity — the first request may take 30-50 seconds to wake up.
+
+## 🖼️ Screenshots
+
+**Recruiter Dashboard**
+![Dashboard](docs/screenshot-dashboard.png)
+
+**AI-Generated Interview Questions**
+![Interview Questions](docs/screenshot-interview-questions.png)
+
 ## ✨ Features
 
 - **Resume upload & parsing** — accepts PDF/DOCX/TXT, extracts text with Apache Tika
@@ -21,7 +36,7 @@ AI-powered resume screening, candidate ranking, and interview question generatio
 
 ## 📦 Getting Started
 
-### Option 1: Docker (recommended — one command, no manual installs)
+### Docker (recommended — one command, no manual installs)
 
 ```bash
 git clone https://github.com/snehamandal1001/ai-recruiter-platform.git
@@ -32,8 +47,21 @@ docker compose up --build
 
 Visit `http://localhost:3000`.
 
-### Option 2: Run locally
-See [backend setup](#) and [frontend setup](#) — requires Java 21, Node 20, and PostgreSQL installed locally.
+### Running without Docker
+
+**Backend** (requires Java 21 + PostgreSQL):
+```bash
+cd backend
+# set DB_USERNAME, DB_PASSWORD, GROQ_API_KEY as environment variables
+./mvnw spring-boot:run
+```
+
+**Frontend** (requires Node 20):
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ## 🧪 Running Tests
 
@@ -63,9 +91,3 @@ cd backend
 ## 📄 License
 
 MIT — see [LICENSE](LICENSE)
-## 🚀 Live Demo
-
-**Frontend:** https://ai-recruiter-platform-navy.vercel.app
-**Backend API:** https://ai-recruiter-platform.onrender.com/api/jobs
-
-> Note: the backend is on Render's free tier, which spins down after inactivity — the first request may take 30-50 seconds to wake up.
